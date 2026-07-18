@@ -57,6 +57,10 @@ export async function createJob(employerId: string, input: CreateJobInput) {
   return job;
 }
 
+function escapeRegex(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function buildJobFilter(
   query: JobQueryInput,
   opts: { restrictActive: boolean; employerId?: string },
@@ -75,12 +79,22 @@ function buildJobFilter(
   if (query.type) filter.type = query.type;
   if (query.locationType) filter.locationType = query.locationType;
   if (query.location)
-    filter.location = { $regex: query.location, $options: "i" };
+    filter.location = { $regex: escapeRegex(query.location), $options: "i" };
   if (query.minSalary !== undefined)
     filter.salaryMax = { $gte: query.minSalary };
   if (query.maxSalary !== undefined)
     filter.salaryMin = { $lte: query.maxSalary };
-  if (query.search) filter.$text = { $search: query.search };
+
+  if (query.search) {
+    const pattern = escapeRegex(query.search);
+    filter.$or = [
+      { title: { $regex: pattern, $options: "i" } },
+      { shortDescription: { $regex: pattern, $options: "i" } },
+      { "company.name": { $regex: pattern, $options: "i" } },
+      { category: { $regex: pattern, $options: "i" } },
+      { skills: { $regex: pattern, $options: "i" } },
+    ];
+  }
 
   return filter;
 }

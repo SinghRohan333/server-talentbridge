@@ -11,6 +11,8 @@ import { validate } from "../middleware/validate";
 import { registerSchema, loginSchema } from "../validators/auth.schema";
 import { requireAuth } from "../middleware/auth";
 import { asyncHandler } from "../utils/asyncHandler";
+import { googleAuth } from "../controllers/auth.controller";
+import { googleAuthSchema } from "../validators/auth.schema";
 
 const router = Router();
 
@@ -30,5 +32,11 @@ router.post("/login", authLimiter, validate(loginSchema), asyncHandler(login));
 router.post("/refresh", asyncHandler(refresh));
 router.post("/logout", requireAuth, asyncHandler(logout));
 router.get("/me", requireAuth, asyncHandler(me));
+router.post(
+  "/google",
+  authLimiter,
+  validate(googleAuthSchema),
+  asyncHandler(googleAuth),
+);
 
 export default router;

@@ -5,6 +5,7 @@ import { env } from "./config/env";
 import { connectDB, ensureIndexes } from "./config/db";
 import { errorHandler } from "./middleware/errorHandler";
 import authRoutes from "./routes/auth.routes";
+import jobRoutes from "./routes/job.routes";
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.get("/health", (_req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/jobs", jobRoutes);
 
 app.use((_req, res) => {
   res.status(404).json({ error: "Route not found" });

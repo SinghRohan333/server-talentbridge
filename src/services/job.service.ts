@@ -207,3 +207,12 @@ export async function deleteJob(
 
   await jobsCollection().deleteOne({ _id: job._id });
 }
+
+export async function getJobFilterOptions() {
+  const collection = jobsCollection();
+  const [categories, locations] = await Promise.all([
+    collection.distinct("category", { status: "active" }),
+    collection.distinct("location", { status: "active" }),
+  ]);
+  return { categories: categories.sort(), locations: locations.sort() };
+}

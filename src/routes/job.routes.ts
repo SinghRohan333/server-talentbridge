@@ -17,6 +17,7 @@ import {
   getJobHandler,
   updateJobHandler,
   deleteJobHandler,
+  getJobFilterOptionsHandler,
 } from "../controllers/job.controller";
 
 const router = Router();
@@ -29,6 +30,7 @@ router.get(
   validateQuery(jobQuerySchema),
   asyncHandler(myJobsHandler),
 );
+router.get("/meta/filters", asyncHandler(getJobFilterOptionsHandler));
 router.get("/:id", optionalAuth, asyncHandler(getJobHandler));
 
 router.post(

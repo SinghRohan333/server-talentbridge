@@ -31,6 +31,7 @@ export const createJobSchema = z
     benefits: z.array(z.string().trim().min(1)).optional(),
     experienceLevel: experienceLevelEnum,
     applicationDeadline: z.string().datetime().optional(),
+    companyLogoUrl: z.string().trim().url("Enter a valid URL").optional(),
   })
   .refine(
     (data) =>

@@ -6,6 +6,7 @@ import {
   getSimilarJobs,
   updateJob,
   deleteJob,
+  getJobFilterOptions,
 } from "../services/job.service";
 import { JobQueryInput } from "../validators/job.schema";
 
@@ -43,4 +44,9 @@ export async function updateJobHandler(req: Request, res: Response) {
 export async function deleteJobHandler(req: Request, res: Response) {
   await deleteJob(req.params.id as string, req.user!);
   res.status(200).json({ message: "Job deleted" });
+}
+
+export async function getJobFilterOptionsHandler(_req: Request, res: Response) {
+  const options = await getJobFilterOptions();
+  res.status(200).json(options);
 }

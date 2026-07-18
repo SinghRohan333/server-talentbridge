@@ -29,7 +29,7 @@ export interface User {
   _id?: ObjectId;
   email: string;
   passwordHash: string | null;
-  googleId: string | null;
+  googleId?: string;
   role: UserRole;
   name: string;
   avatar: string | null;

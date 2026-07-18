@@ -52,7 +52,6 @@ export async function registerUser(input: RegisterInput) {
   const newUser: User = {
     email: input.email,
     passwordHash,
-    googleId: null,
     role: input.role,
     name: input.name,
     avatar: null,

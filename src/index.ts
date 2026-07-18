@@ -3,6 +3,8 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { env } from "./config/env";
 import { connectDB, ensureIndexes } from "./config/db";
+import { errorHandler } from "./middleware/errorHandler";
+import authRoutes from "./routes/auth.routes";
 
 const app = express();
 
@@ -19,24 +21,13 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
-// Routes get mounted here starting Milestone 2 (auth), Milestone 3 (jobs), etc.
+app.use("/api/auth", authRoutes);
 
 app.use((_req, res) => {
   res.status(404).json({ error: "Route not found" });
 });
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-app.use(
-  (
-    err: Error,
-    _req: express.Request,
-    res: express.Response,
-    _next: express.NextFunction,
-  ) => {
-    console.error(err);
-    res.status(500).json({ error: "Internal server error" });
-  },
-);
+app.use(errorHandler);
 
 async function start() {
   try {

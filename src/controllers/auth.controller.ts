@@ -9,6 +9,10 @@ import {
   invalidateRefreshTokens,
   getUserById,
 } from "../services/auth.service";
+import {
+  verifyGoogleCredential,
+  findOrCreateGoogleUser,
+} from "../services/google-auth.service";
 
 const REFRESH_COOKIE_NAME = "refreshToken";
 
@@ -53,4 +57,18 @@ export async function logout(req: Request, res: Response) {
 export async function me(req: Request, res: Response) {
   const user = await getUserById(req.user!.id);
   res.status(200).json({ user: sanitizeUser(user) });
+}
+
+export async function googleAuth(req: Request, res: Response) {
+  const { credential, role } = req.body as {
+    credential: string;
+    role?: "seeker" | "employer";
+  };
+
+  const profile = await verifyGoogleCredential(credential);
+  const user = await findOrCreateGoogleUser(profile, role);
+
+  const { accessToken, refreshToken } = issueTokens(user);
+  res.cookie(REFRESH_COOKIE_NAME, refreshToken, refreshCookieOptions);
+  res.status(200).json({ accessToken, user: sanitizeUser(user) });
 }

@@ -43,10 +43,6 @@ export async function ensureIndexes(): Promise<void> {
     { key: { status: 1, createdAt: -1 }, name: "status_createdAt_idx" },
     { key: { category: 1, type: 1, location: 1 }, name: "filter_compound_idx" },
     { key: { skills: 1 }, name: "skills_multikey_idx" },
-    {
-      key: { title: "text", description: "text", shortDescription: "text" },
-      name: "job_text_search",
-    },
   ]);
 
   await database.collection("applications").createIndexes([

@@ -21,16 +21,28 @@ export async function createJob(employerId: string, input: CreateJobInput) {
   });
   if (!employer) throw new ApiError(404, "Employer account not found");
 
+  const logo = input.companyLogoUrl ?? employer.company?.logo ?? null;
+
+  if (input.companyLogoUrl && input.companyLogoUrl !== employer.company?.logo) {
+    await usersCollection().updateOne(
+      { _id: employer._id },
+      {
+        $set: {
+          "company.logo": input.companyLogoUrl,
+          "company.name": employer.company?.name || employer.name,
+          updatedAt: new Date(),
+        },
+      },
+    );
+  }
+
   const now = new Date();
   const job: Job = {
     employerId: new ObjectId(employerId),
     title: input.title,
     description: input.description,
     shortDescription: input.shortDescription,
-    company: {
-      name: employer.company?.name || employer.name,
-      logo: employer.company?.logo ?? null,
-    },
+    company: { name: employer.company?.name || employer.name, logo },
     category: input.category,
     type: input.type,
     locationType: input.locationType,

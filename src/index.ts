@@ -11,6 +11,7 @@ import applicationRoutes from "./routes/application.routes";
 import statsRoutes from "./routes/stats.routes";
 import newsletterRoutes from "./routes/newsletter.routes";
 import contactRoutes from "./routes/contact.routes";
+import userRoutes from "./routes/user.routes";
 
 const app = express();
 
@@ -34,6 +35,7 @@ app.use("/api/applications", applicationRoutes);
 app.use("/api/stats", statsRoutes);
 app.use("/api/newsletter", newsletterRoutes);
 app.use("/api/contact", contactRoutes);
+app.use("/api/users", userRoutes);
 
 app.use((_req, res) => {
   res.status(404).json({ error: "Route not found" });

@@ -18,6 +18,7 @@ import {
   updateJobHandler,
   deleteJobHandler,
   getJobFilterOptionsHandler,
+  getCategoryCountsHandler,
 } from "../controllers/job.controller";
 
 const router = Router();
@@ -31,6 +32,7 @@ router.get(
   asyncHandler(myJobsHandler),
 );
 router.get("/meta/filters", asyncHandler(getJobFilterOptionsHandler));
+router.get("/meta/categories", asyncHandler(getCategoryCountsHandler));
 router.get("/:id", optionalAuth, asyncHandler(getJobHandler));
 
 router.post(

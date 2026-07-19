@@ -247,3 +247,14 @@ export async function getJobFilterOptions() {
   ]);
   return { categories: categories.sort(), locations: locations.sort() };
 }
+
+export async function getCategoryCounts() {
+  return jobsCollection()
+    .aggregate<{ _id: string; count: number }>([
+      { $match: { status: "active" } },
+      { $group: { _id: "$category", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 8 },
+    ])
+    .toArray();
+}

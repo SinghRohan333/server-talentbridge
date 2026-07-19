@@ -7,6 +7,7 @@ import {
   updateJob,
   deleteJob,
   getJobFilterOptions,
+  getCategoryCounts,
 } from "../services/job.service";
 import { isJobSaved } from "../services/saved-job.service";
 import { hasAppliedToJob } from "../services/application.service";
@@ -61,4 +62,9 @@ export async function deleteJobHandler(req: Request, res: Response) {
 export async function getJobFilterOptionsHandler(_req: Request, res: Response) {
   const options = await getJobFilterOptions();
   res.status(200).json(options);
+}
+
+export async function getCategoryCountsHandler(_req: Request, res: Response) {
+  const counts = await getCategoryCounts();
+  res.status(200).json(counts);
 }

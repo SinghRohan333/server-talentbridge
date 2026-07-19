@@ -6,6 +6,8 @@ import { connectDB, ensureIndexes } from "./config/db";
 import { errorHandler } from "./middleware/errorHandler";
 import authRoutes from "./routes/auth.routes";
 import jobRoutes from "./routes/job.routes";
+import savedJobRoutes from "./routes/saved-job.routes";
+import applicationRoutes from "./routes/application.routes";
 
 const app = express();
 
@@ -24,6 +26,8 @@ app.get("/health", (_req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/jobs", jobRoutes);
+app.use("/api/saved-jobs", savedJobRoutes);
+app.use("/api/applications", applicationRoutes);
 
 app.use((_req, res) => {
   res.status(404).json({ error: "Route not found" });

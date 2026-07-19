@@ -98,7 +98,7 @@ export interface Application {
   seekerId: ObjectId;
   employerId: ObjectId;
   coverLetter: string | null;
-  resumeUrl: string;
+  resumeUrl: string | null;
   status: ApplicationStatus;
   createdAt: Date;
   updatedAt: Date;

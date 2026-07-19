@@ -166,3 +166,13 @@ export interface NewsletterSubscriber {
   email: string;
   createdAt: Date;
 }
+
+export interface ContactMessage {
+  _id?: ObjectId;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  isRead: boolean;
+  createdAt: Date;
+}

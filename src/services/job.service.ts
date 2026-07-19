@@ -7,6 +7,7 @@ import {
   UpdateJobInput,
   JobQueryInput,
 } from "../validators/job.schema";
+import { logInteraction } from "./interaction.service";
 
 function jobsCollection() {
   return getDb().collection<Job>("jobs");
@@ -176,6 +177,10 @@ export async function getJobById(
       { $inc: { viewCount: 1 } },
     );
     job.viewCount += 1;
+
+    if (requester?.role === "seeker") {
+      await logInteraction(requester.id, job._id!, "view");
+    }
   }
 
   return job;

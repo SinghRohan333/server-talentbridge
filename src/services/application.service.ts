@@ -109,3 +109,94 @@ export async function getMyApplications(
     },
   };
 }
+
+export async function getApplicationsForJob(
+  employerId: string,
+  jobId: string,
+  page: number,
+  limit: number,
+) {
+  if (!ObjectId.isValid(jobId)) throw new ApiError(400, "Invalid job id");
+  const jobObjectId = new ObjectId(jobId);
+
+  const job = await jobsCollection().findOne({ _id: jobObjectId });
+  if (!job) throw new ApiError(404, "Job not found");
+  if (job.employerId.toString() !== employerId) {
+    throw new ApiError(
+      403,
+      "You do not have permission to view these applicants",
+    );
+  }
+
+  const collection = applicationsCollection();
+  const filter = { jobId: jobObjectId };
+
+  const [applications, total] = await Promise.all([
+    collection
+      .find(filter)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .toArray(),
+    collection.countDocuments(filter),
+  ]);
+
+  const seekerIds = applications.map((a) => a.seekerId);
+  const seekers = await usersCollection()
+    .find({ _id: { $in: seekerIds } })
+    .toArray();
+  const seekerMap = new Map(seekers.map((s) => [s._id!.toString(), s]));
+
+  const withSeekers = applications.map((app) => {
+    const seeker = seekerMap.get(app.seekerId.toString());
+    return {
+      ...app,
+      seeker: seeker
+        ? {
+            _id: seeker._id,
+            name: seeker.name,
+            email: seeker.email,
+            skills: seeker.skills,
+            resumeUrl: seeker.resumeUrl,
+            avatar: seeker.avatar,
+          }
+        : null,
+    };
+  });
+
+  return {
+    job,
+    applications: withSeekers,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.max(1, Math.ceil(total / limit)),
+    },
+  };
+}
+
+export async function updateApplicationStatus(
+  employerId: string,
+  applicationId: string,
+  status: Application["status"],
+) {
+  if (!ObjectId.isValid(applicationId))
+    throw new ApiError(400, "Invalid application id");
+  const application = await applicationsCollection().findOne({
+    _id: new ObjectId(applicationId),
+  });
+  if (!application) throw new ApiError(404, "Application not found");
+  if (application.employerId.toString() !== employerId) {
+    throw new ApiError(
+      403,
+      "You do not have permission to modify this application",
+    );
+  }
+
+  await applicationsCollection().updateOne(
+    { _id: application._id },
+    { $set: { status, updatedAt: new Date() } },
+  );
+  return applicationsCollection().findOne({ _id: application._id });
+}

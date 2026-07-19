@@ -80,6 +80,11 @@ export async function ensureIndexes(): Promise<void> {
     .collection("newsletter_subscribers")
     .createIndexes([{ key: { email: 1 }, unique: true, name: "email_unique" }]);
 
+  await database.collection("contact_messages").createIndexes([
+    { key: { createdAt: -1 }, name: "createdAt_idx" },
+    { key: { isRead: 1 }, name: "isRead_idx" },
+  ]);
+
   console.log("✅ Indexes ensured for all collections");
 }
 

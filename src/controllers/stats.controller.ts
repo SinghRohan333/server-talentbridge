@@ -1,0 +1,7 @@
+import { Request, Response } from "express";
+import { getPublicStats } from "../services/stats.service";
+
+export async function getPublicStatsHandler(_req: Request, res: Response) {
+  const stats = await getPublicStats();
+  res.status(200).json(stats);
+}

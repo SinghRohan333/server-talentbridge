@@ -160,3 +160,9 @@ export interface RecommendationCache {
   generatedAt: Date;
   expiresAt: Date;
 }
+
+export interface NewsletterSubscriber {
+  _id?: ObjectId;
+  email: string;
+  createdAt: Date;
+}

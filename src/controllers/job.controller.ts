@@ -8,6 +8,8 @@ import {
   deleteJob,
   getJobFilterOptions,
 } from "../services/job.service";
+import { isJobSaved } from "../services/saved-job.service";
+import { hasAppliedToJob } from "../services/application.service";
 import { JobQueryInput } from "../validators/job.schema";
 
 export async function createJobHandler(req: Request, res: Response) {
@@ -33,7 +35,17 @@ export async function myJobsHandler(req: Request, res: Response) {
 export async function getJobHandler(req: Request, res: Response) {
   const job = await getJobById(req.params.id as string, req.user);
   const similar = await getSimilarJobs(job);
-  res.status(200).json({ job, similar });
+
+  let isSaved = false;
+  let hasApplied = false;
+  if (req.user?.role === "seeker") {
+    [isSaved, hasApplied] = await Promise.all([
+      isJobSaved(req.user.id, job._id!.toString()),
+      hasAppliedToJob(req.user.id, job._id!.toString()),
+    ]);
+  }
+
+  res.status(200).json({ job, similar, isSaved, hasApplied });
 }
 
 export async function updateJobHandler(req: Request, res: Response) {

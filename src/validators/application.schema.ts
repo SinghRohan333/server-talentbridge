@@ -8,4 +8,14 @@ export const applyToJobSchema = z.object({
     .optional(),
 });
 
+export const updateApplicationStatusSchema = z.object({
+  status: z.enum([
+    "pending",
+    "reviewed",
+    "shortlisted",
+    "rejected",
+    "accepted",
+  ]),
+});
+
 export type ApplyToJobInput = z.infer<typeof applyToJobSchema>;

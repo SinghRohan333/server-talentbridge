@@ -76,6 +76,10 @@ export async function ensureIndexes(): Promise<void> {
     { key: { expiresAt: 1 }, expireAfterSeconds: 0, name: "cache_ttl_idx" },
   ]);
 
+  await database
+    .collection("newsletter_subscribers")
+    .createIndexes([{ key: { email: 1 }, unique: true, name: "email_unique" }]);
+
   console.log("✅ Indexes ensured for all collections");
 }
 

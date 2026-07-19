@@ -6,12 +6,12 @@ import {
 } from "../services/saved-job.service";
 
 export async function saveJobHandler(req: Request, res: Response) {
-  const saved = await saveJob(req.user!.id, req.params.jobId);
+  const saved = await saveJob(req.user!.id, req.params.jobId as string);
   res.status(201).json({ saved });
 }
 
 export async function unsaveJobHandler(req: Request, res: Response) {
-  await unsaveJob(req.user!.id, req.params.jobId);
+  await unsaveJob(req.user!.id, req.params.jobId as string);
   res.status(200).json({ message: "Job removed from saved list" });
 }
 

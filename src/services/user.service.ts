@@ -3,6 +3,9 @@ import { getDb } from "../config/db";
 import { User, Application, Job, Interaction } from "../types/models";
 import { ApiError } from "../middleware/errorHandler";
 import { UpdateProfileInput } from "../validators/profile.schema";
+import cloudinary from "../config/cloudinary";
+import { extractResumeText } from "./ai/resumeParser.service";
+import { extractResumeData } from "./ai/resumeExtraction.service";
 
 function usersCollection() {
   return getDb().collection<User>("users");
@@ -68,4 +71,56 @@ export async function getSeekerDashboard(seekerId: string) {
       .map((id) => jobMap.get(id.toString()))
       .filter((j): j is WithId<Job> => !!j),
   };
+}
+
+interface CloudinaryRawUploadResult {
+  secure_url: string;
+}
+
+export async function processResumeUpload(
+  userId: string,
+  file: Express.Multer.File,
+) {
+  const resumeText = await extractResumeText(file.buffer, file.mimetype);
+  const extracted = await extractResumeData(resumeText);
+
+  const extension = file.mimetype === "application/pdf" ? "pdf" : "docx";
+  const uploadResult = await new Promise<CloudinaryRawUploadResult>(
+    (resolve, reject) => {
+      cloudinary.uploader
+        .upload_stream(
+          {
+            resource_type: "raw",
+            folder: "talentbridge/resumes",
+            public_id: `resume-${userId}-${Date.now()}`,
+            format: extension,
+          },
+          (error, result) => {
+            if (error || !result)
+              return reject(error ?? new Error("Resume upload failed"));
+            resolve(result as CloudinaryRawUploadResult);
+          },
+        )
+        .end(file.buffer);
+    },
+  );
+
+  const user = await usersCollection().findOne({ _id: new ObjectId(userId) });
+  if (!user) throw new ApiError(404, "User not found");
+
+  const mergedSkills = Array.from(
+    new Set([...user.skills, ...extracted.skills]),
+  );
+
+  const update: Partial<User> = {
+    resumeUrl: uploadResult.secure_url,
+    resumeSummary: extracted.summary || user.resumeSummary,
+    skills: mergedSkills,
+    updatedAt: new Date(),
+  };
+  if (extracted.experience.length > 0) update.experience = extracted.experience;
+  if (extracted.education.length > 0) update.education = extracted.education;
+
+  await usersCollection().updateOne({ _id: user._id }, { $set: update });
+  return usersCollection().findOne({ _id: user._id });
 }

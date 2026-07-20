@@ -70,7 +70,7 @@ export async function createJob(employerId: string, input: CreateJobInput) {
   return job;
 }
 
-function escapeRegex(value: string) {
+export function escapeRegex(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 

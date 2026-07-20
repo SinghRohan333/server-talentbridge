@@ -13,6 +13,7 @@ import newsletterRoutes from "./routes/newsletter.routes";
 import contactRoutes from "./routes/contact.routes";
 import userRoutes from "./routes/user.routes";
 import adminRoutes from "./routes/admin.routes";
+import recommendationRoutes from "./routes/recommendation.routes";
 
 const app = express();
 
@@ -38,6 +39,7 @@ app.use("/api/newsletter", newsletterRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/recommendations", recommendationRoutes);
 
 app.use((_req, res) => {
   res.status(404).json({ error: "Route not found" });

@@ -18,17 +18,16 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function isRateLimitError(err: unknown): boolean {
+  return (err as { status?: number })?.status === 429;
+}
+
 interface GroqJsonCallOptions {
   systemPrompt: string;
   userPrompt: string;
   maxRetries?: number;
 }
 
-/**
- * Calls Groq's chat completions API with JSON mode and retries once or twice
- * on rate limits before surfacing a friendly error. Free-tier quota is tight
- * enough that a single burst of clicks could otherwise 500 for the user.
- */
 export async function callGroqForJson<T>({
   systemPrompt,
   userPrompt,
@@ -52,24 +51,68 @@ export async function callGroqForJson<T>({
       const content = completion.choices[0]?.message?.content;
       if (!content)
         throw new ApiError(502, "AI service returned an empty response");
-
       return JSON.parse(content) as T;
     } catch (err) {
-      const status = (err as { status?: number })?.status;
-
-      if (status === 429 && attempt < maxRetries) {
+      if (isRateLimitError(err) && attempt < maxRetries) {
         attempt += 1;
         await sleep(attempt * 1000);
         continue;
       }
-      if (status === 429) {
+      if (isRateLimitError(err))
         throw new ApiError(
           429,
           "The AI service is busy right now — please try again in a moment",
         );
-      }
       if (err instanceof ApiError) throw err;
+      console.error("Groq API error:", err);
+      throw new ApiError(
+        502,
+        "AI service is temporarily unavailable — please try again shortly",
+      );
+    }
+  }
+}
 
+interface GroqChatOptions {
+  messages: Groq.Chat.Completions.ChatCompletionMessageParam[];
+  tools?: Groq.Chat.Completions.ChatCompletionTool[];
+  maxRetries?: number;
+}
+
+export async function callGroqChat({
+  messages,
+  tools,
+  maxRetries = 2,
+}: GroqChatOptions): Promise<Groq.Chat.Completions.ChatCompletionMessage> {
+  const groq = getClient();
+  let attempt = 0;
+
+  while (true) {
+    try {
+      const completion = await groq.chat.completions.create({
+        model: GROQ_MODEL,
+        messages,
+        tools,
+        tool_choice: tools ? "auto" : undefined,
+        temperature: 0.4,
+      });
+
+      const message = completion.choices[0]?.message;
+      if (!message)
+        throw new ApiError(502, "AI service returned an empty response");
+      return message;
+    } catch (err) {
+      if (isRateLimitError(err) && attempt < maxRetries) {
+        attempt += 1;
+        await sleep(attempt * 1000);
+        continue;
+      }
+      if (isRateLimitError(err))
+        throw new ApiError(
+          429,
+          "The AI service is busy right now — please try again in a moment",
+        );
+      if (err instanceof ApiError) throw err;
       console.error("Groq API error:", err);
       throw new ApiError(
         502,

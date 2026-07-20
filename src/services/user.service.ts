@@ -3,7 +3,7 @@ import { getDb } from "../config/db";
 import { User, Application, Job, Interaction } from "../types/models";
 import { ApiError } from "../middleware/errorHandler";
 import { UpdateProfileInput } from "../validators/profile.schema";
-import cloudinary from "../config/cloudinary";
+import cloudinary, { assertCloudinaryConfigured } from "../config/cloudinary";
 import { extractResumeText } from "./ai/resumeParser.service";
 import { extractResumeData } from "./ai/resumeExtraction.service";
 
@@ -81,6 +81,7 @@ export async function processResumeUpload(
   userId: string,
   file: Express.Multer.File,
 ) {
+  assertCloudinaryConfigured();
   const resumeText = await extractResumeText(file.buffer, file.mimetype);
   const extracted = await extractResumeData(resumeText);
 

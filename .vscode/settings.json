@@ -1,3 +1,4 @@
 {
-  "workbench.colorTheme": "Dark+"
+  "workbench.colorTheme": "Dark+",
+  "js/ts.tsdk.path": "node_modules/typescript/lib"
 }
